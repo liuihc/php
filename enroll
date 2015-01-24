@@ -1,0 +1,29 @@
+form method="post">
+	<label>请在下面输入你的大名</label><br /><br />
+    <input name="string" value="<?php echo ( isset( $_POST['string'] ) ) ? $_POST['string'] : null ;?>" />
+	<br /><br />
+	<input type="submit" name="submit" value="我要报名！"/><br /><br />
+</form>
+<?php
+	define('PATH', dirname(dirname(dirname(dirname(__FILE__)))) . '/');
+	require_once(PATH.'wp-blog-header.php');  
+	global $wpdb;
+	if ( isset( $_POST['submit'] ) && empty( $_POST['string'] ) ) {
+		echo "<div>请先输入您的大名</div>";
+	} elseif ( isset( $_POST['submit'] ) && ( $_POST['string'] ) ) {
+		$count1 = $wpdb->get_var("SELECT count(*) FROM wp_enroll WHERE name = '$_POST[string]' ");
+		$count2 = $wpdb->get_var("SELECT count(*) FROM wp_enroll WHERE ip = '$_SERVER[REMOTE_ADDR]' ");
+		if($count1 > 0){
+			echo '<div>您已成功报名，无须重复提交</div>';
+			return;
+		}
+		if($count2 >= 3){
+			echo '<div>每台机器最多只能报三次名哦！</div>';
+			return;
+		}
+		$wpdb->query("INSERT INTO wp_enroll (name, ip) VALUES ('$_POST[string]', '$_SERVER[REMOTE_ADDR]')");
+		echo '<div>报名成功</div>';	
+	}
+	//$wpdb->insert($wpdb->enroll, array("name" => $_POST['string'], "ip" => $_SERVER["REMOTE_ADDR"]), array("%s", "%s"));
+	//$email = $wpdb->get_var("SELECT user_email FROM wp_users WHERE user_login = 'bo' ");
+?>
